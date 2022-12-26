@@ -5,9 +5,14 @@ import PackageDescription
 
 let package = Package(
     name: "Scraper",
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.4.3")
+    ],
     targets: [
-        .executableTarget(name: "Scraper", dependencies: []),
+        .executableTarget(
+            name: "Scraper",
+            dependencies: ["SwiftSoup"]
+        ),
         .testTarget(name: "ScraperTests", dependencies: ["Scraper"]),
     ]
 )
