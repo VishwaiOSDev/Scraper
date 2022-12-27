@@ -8,8 +8,16 @@
 import Foundation
 import SwiftSoup
 
+extension Collection {
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+
 @main
 class Scraper {
+    
+    var currencyData: [String: Any]?
     
     func convertToHTML(from url: URL) {
         let content = try! String(contentsOf: url)
@@ -18,8 +26,9 @@ class Scraper {
             let table = try doc.select("tbody")
             let rows = try table.select("tr")
             try rows.forEach { element in
-                let row = try element.select("td")
-                print(try row.text())
+                let row = try element.select("td").array()
+                guard let country = row[safe: 0], let price = row[safe: 2] else { return }
+                print("\(try country.text()): \(try price.text())")
             }
         } catch {
             print(error.localizedDescription)
