@@ -8,16 +8,14 @@
 import Foundation
 import SwiftSoup
 
-extension Collection {
-    subscript (safe index: Index) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
-}
-
 @main
 class Scraper {
     
-    var currencyData: [String: Any]?
+    init() {}
+    
+    func isWebLive(webURL: URL) -> Bool {
+        return false
+    }
     
     func convertToHTML(from url: URL) {
         let content = try! String(contentsOf: url)
@@ -39,7 +37,6 @@ class Scraper {
 extension Scraper {
     
     static func main() {
-        let webURL = URL(string: "https://www.x-rates.com/table/?from=INR&amount=1")!
-        Scraper().convertToHTML(from: webURL)
+        let _ = Scraper()
     }
 }
