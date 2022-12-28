@@ -7,27 +7,35 @@
 
 import Foundation
 import SwiftSoup
+import NetworkKit
 
 @main
 class Scraper {
     
-    init() {}
+    var currencyRate: [String: Any] = [:]
+    
+    init() {
+        XRate.allCases.forEach { currencyRate[$0.rawValue] = [:] }
+    }
     
     func isWebLive(webURL: URL) -> Bool {
+        print(currencyRate)
         return false
     }
     
     func convertToHTML(from url: URL) {
-        let content = try! String(contentsOf: url)
         do {
+            let content = try String(contentsOf: url)
             let doc: Document = try SwiftSoup.parse(content)
             let table = try doc.select("tbody")
             let rows = try table.select("tr")
-            try rows.forEach { element in
-                let row = try element.select("td").array()
-                guard let country = row[safe: 0], let price = row[safe: 2] else { return }
-                print("\(try country.text()): \(try price.text())")
+            var currencyRate = try rows.map { element in
+                let cells = try element.select("td")
+                let currency = try cells.get(0).text()
+                let rate = try cells.get(2).text()
+                return (currency: currency, rate: rate)
             }
+            print(currencyRate.first)
         } catch {
             print(error.localizedDescription)
         }
@@ -37,6 +45,8 @@ class Scraper {
 extension Scraper {
     
     static func main() {
-        let _ = Scraper()
+        let scraper = Scraper()
+        let inrURL = try! XRate.INR.url
+        scraper.isWebLive(webURL: inrURL)
     }
 }
