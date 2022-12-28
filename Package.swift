@@ -8,14 +8,16 @@ let package = Package(
     platforms: [.iOS(.v13), .macOS(.v10_15)],
     dependencies: [
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.4.3"),
-        .package(url: "git@github.com:VishwaiOSDev/NetworkKit.git", from: "0.1.2")
+        .package(url: "git@github.com:VishwaiOSDev/NetworkKit.git", from: "0.1.2"),
+        .package(url: "git@github.com:VishwaiOSDev/LogKit.git", from: "0.0.11")
     ],
     targets: [
         .executableTarget(
             name: "Scraper",
             dependencies: [
                 "SwiftSoup",
-                "NetworkKit"
+                "NetworkKit",
+                "LogKit"
             ]
         ),
         .testTarget(name: "ScraperTests", dependencies: ["Scraper"]),

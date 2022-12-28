@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftSoup
+import LogKit
 import NetworkKit
 
 @main
@@ -28,7 +29,7 @@ class Scraper {
             let document = try toHTML(of: inrURL)
             try extractData(from: document)
         } catch {
-            print("Error: \(error.localizedDescription)")
+            Log.error(error.localizedDescription)
         }
     }
     
