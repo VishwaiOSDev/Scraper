@@ -16,18 +16,29 @@ class Scraper {
     
     init() {
         XRate.allCases.forEach { currencyRate[$0.rawValue] = [[:]] }
+        Task {
+            await runScraper()
+        }
     }
     
-    func isWebLive(webURL: URL) -> Bool {
-        print(currencyRate)
-        return false
-    }
-    
-    func convertToHTML(from url: URL) {
+    func runScraper() async {
         do {
-            let content = try String(contentsOf: url)
-            let doc: Document = try SwiftSoup.parse(content)
-            let table = try doc.select("tbody")
+            guard await isReachable(XRate.INR) else { return }
+            let inrURL = try XRate.INR.url
+            let document = try toHTML(of: inrURL)
+            try extractData(from: document)
+        } catch {
+            print("Error: \(error.localizedDescription)")
+        }
+    }
+    
+    func isReachable(_ webiste: NetworkRequestable) async -> Bool {
+        return await NetworkKit.shared.ping(webiste)
+    }
+    
+    func extractData(from document: Document) throws {
+        do {
+            let table = try document.select("tbody")
             let rows = try table.select("tr")
             let currentCurrencyRate = try rows.map { element in
                 let cells = try element.select("td")
@@ -37,17 +48,22 @@ class Scraper {
             }
             currencyRate[XRate.INR.rawValue] = currentCurrencyRate
         } catch {
-            print(error.localizedDescription)
+            throw error
+        }
+    }
+    
+    func toHTML(of url: URL) throws -> Document {
+        do {
+            let content = try String(contentsOf: url)
+            return try SwiftSoup.parse(content)
+        } catch {
+            throw error
         }
     }
 }
 
 extension Scraper {
-    
     static func main() {
-        let scraper = Scraper()
-        let inrURL = try! XRate.INR.url
-        scraper.convertToHTML(from: inrURL)
-        scraper.isWebLive(webURL: inrURL)
+        let _ = Scraper()
     }
 }
