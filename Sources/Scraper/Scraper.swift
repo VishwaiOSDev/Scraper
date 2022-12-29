@@ -32,6 +32,12 @@ class Scraper {
         }
     }
     
+    func loadJSON() {
+        let jsonData = Bundle.getJSONData(fileName: "currency_data")
+        let currencyData = try! JSONDecoder().decode(NestedDictionary.self, from: jsonData)
+        Log.debug(currencyData)
+    }
+    
     func isReachableStartScraping(for website: XRate) async throws {
         guard await NetworkKit.shared.ping(website) else { return }
         let document = try toHTML(of: try website.url)
@@ -81,6 +87,7 @@ extension Scraper {
     
     static func main() async {
         let scraper = Scraper()
-        await scraper.runScraper()
+        let ENV_IS_DEV_MODE: Bool = boolEnvVariable(get: "IS_DEV_MODE")
+        ENV_IS_DEV_MODE ? scraper.loadJSON() : await scraper.runScraper()
     }
 }

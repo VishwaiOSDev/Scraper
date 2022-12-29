@@ -18,7 +18,8 @@ let package = Package(
                 "SwiftSoup",
                 "NetworkKit",
                 "LogKit"
-            ]
+            ],
+            resources: [.process("Resources")]
         ),
         .testTarget(name: "ScraperTests", dependencies: ["Scraper"]),
     ]
