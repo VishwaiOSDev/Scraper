@@ -16,29 +16,29 @@ typealias NestedDictionary = [String: [[String: String]]]
 class Scraper {
     
     var currencyRate: NestedDictionary = [:]
-
+    
     init() {
         XRate.allCases.forEach { currencyRate[$0.rawValue] = [[:]] }
     }
     
     func runScraper() async {
         do {
-            await XRate.allCases.asyncForEach { currencyCode in
-                guard await isReachable(currencyCode) else { return }
+            try await XRate.allCases.asyncForEach { currencyCode in
+                try await isReachableStartScraping(for: currencyCode)
             }
-            //            for currencyCode in XRate.allCases {
-            //                Log.verbose(currencyCode)
-            //                guard await isReachable(currencyCode) else { return }
-            //                let document = try toHTML(of: try currencyCode.url)
-            //                try extractData(from: document)
-            //            }
         } catch {
             Log.error(error.localizedDescription)
         }
     }
     
-    func isReachable(_ webiste: NetworkRequestable) async -> Bool {
-        return await NetworkKit.shared.ping(webiste)
+    func isReachableStartScraping(for webiste: NetworkRequestable) async throws {
+        guard await NetworkKit.shared.ping(webiste) else { return }
+        let document = try toHTML(of: try webiste.url)
+        try scrap(website: document)
+    }
+    
+    func scrap(website: Document) throws {
+        try extractData(from: website)
     }
     
     func extractData(from document: Document) throws {
