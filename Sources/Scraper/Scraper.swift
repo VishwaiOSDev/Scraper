@@ -26,7 +26,6 @@ class Scraper {
             try await XRate.allCases.asyncForEach { currencyCode in
                 try await isReachableStartScraping(for: currencyCode)
             }
-            toJSON(from: currencyRate)
         } catch {
             Log.error(error.localizedDescription)
         }
@@ -61,15 +60,6 @@ class Scraper {
             currencyRate[currencyCode] = currentCurrencyRate
         } catch {
             throw error
-        }
-    }
-    
-    func toJSON(from dict: NestedDictionary) {
-        let encoder = JSONEncoder()
-        if let jsonData = try? encoder.encode(dict) {
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                print(jsonString)
-            }
         }
     }
     
