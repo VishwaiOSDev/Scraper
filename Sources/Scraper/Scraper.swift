@@ -10,24 +10,28 @@ import SwiftSoup
 import LogKit
 import NetworkKit
 
+typealias NestedDictionary = [String: [[String: String]]]
+
 @main
 class Scraper {
     
-    var currencyRate: [String: [[String: String]]] = [:]
-    
+    var currencyRate: NestedDictionary = [:]
+
     init() {
         XRate.allCases.forEach { currencyRate[$0.rawValue] = [[:]] }
-        Task {
-            await runScraper()
-        }
     }
     
     func runScraper() async {
         do {
-            guard await isReachable(XRate.INR) else { return }
-            let inrURL = try XRate.INR.url
-            let document = try toHTML(of: inrURL)
-            try extractData(from: document)
+            await XRate.allCases.asyncForEach { currencyCode in
+                guard await isReachable(currencyCode) else { return }
+            }
+            //            for currencyCode in XRate.allCases {
+            //                Log.verbose(currencyCode)
+            //                guard await isReachable(currencyCode) else { return }
+            //                let document = try toHTML(of: try currencyCode.url)
+            //                try extractData(from: document)
+            //            }
         } catch {
             Log.error(error.localizedDescription)
         }
@@ -48,8 +52,18 @@ class Scraper {
                 return [currency: rate]
             }
             currencyRate[XRate.INR.rawValue] = currentCurrencyRate
+            toJSON(from: currencyRate)
         } catch {
             throw error
+        }
+    }
+    
+    func toJSON(from dict: [String: [[String: String]]]) {
+        let encoder = JSONEncoder()
+        if let jsonData = try? encoder.encode(dict) {
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print(jsonString)
+            }
         }
     }
     
@@ -64,7 +78,9 @@ class Scraper {
 }
 
 extension Scraper {
-    static func main() {
-        let _ = Scraper()
+    
+    static func main() async {
+        let scraper = Scraper()
+        await scraper.runScraper()
     }
 }
