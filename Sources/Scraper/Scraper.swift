@@ -34,7 +34,23 @@ class Scraper {
     func loadJSON() {
         let jsonData = Bundle.getJSONData(fileName: "currency_data")
         let currencyData = try! JSONDecoder().decode(NestedDictionary.self, from: jsonData)
-        Log.debug(currencyData)
+        saveToCSV(currencyData[XRate.INR.rawValue]!, fileName: "\(XRate.INR.rawValue).csv")
+    }
+    
+    func convertToCSV(_ currencyList: [[String : String]]) -> String {
+        var csv = "currency,rate \n"
+        currencyList.forEach { dict in
+            dict.forEach { (key, value) in
+                csv += "\(key),\(value) \n"
+            }
+        }
+        return csv
+    }
+    
+    func saveToCSV(_ dict: [[String: String]], fileName: String) {
+        let csvFile = convertToCSV(dict)
+        Log.debug(FileManager.default.currentDirectoryPath)
+//        let fileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent(fileName)
     }
     
     func isReachableStartScraping(for website: XRate) async throws {
