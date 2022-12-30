@@ -26,32 +26,14 @@ class Scraper {
             try await XRate.allCases.asyncForEach { currencyCode in
                 try await isReachableStartScraping(for: currencyCode)
             }
+            /// Displays all the exchange rates in here
+            Log.verbose(currencyRate)
         } catch {
             Log.error(error.localizedDescription)
         }
     }
     
-    func loadJSON() {
-        let jsonData = Bundle.getJSONData(fileName: "currency_data")
-        let currencyData = try! JSONDecoder().decode(NestedDictionary.self, from: jsonData)
-        saveToCSV(currencyData[XRate.INR.rawValue]!, fileName: "\(XRate.INR.rawValue).csv")
-    }
-    
-    func convertToCSV(_ currencyList: [[String : String]]) -> String {
-        var csv = "currency,rate \n"
-        currencyList.forEach { dict in
-            dict.forEach { (key, value) in
-                csv += "\(key),\(value) \n"
-            }
-        }
-        return csv
-    }
-    
-    func saveToCSV(_ dict: [[String: String]], fileName: String) {
-        let csvFile = convertToCSV(dict)
-        Log.debug(FileManager.default.currentDirectoryPath)
-//        let fileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent(fileName)
-    }
+    // MARK: - Checks Website Status
     
     func isReachableStartScraping(for website: XRate) async throws {
         guard await NetworkKit.shared.ping(website) else { return }
@@ -62,6 +44,8 @@ class Scraper {
     func scrap(website: Document, for currency: String) throws {
         try extractData(from: website, for: currency)
     }
+    
+    // MARK: - Extracting the data from the Web
     
     func extractData(from document: Document, for currencyCode: String) throws {
         do {
@@ -79,6 +63,8 @@ class Scraper {
         }
     }
     
+    // MARK: - Converting to HTML
+    
     func toHTML(of url: URL) throws -> Document {
         do {
             let content = try String(contentsOf: url)
@@ -93,7 +79,6 @@ extension Scraper {
     
     static func main() async {
         let scraper = Scraper()
-        let ENV_IS_DEV_MODE: Bool = boolEnvVariable(get: "IS_DEV_MODE")
-        ENV_IS_DEV_MODE ? scraper.loadJSON() : await scraper.runScraper()
+        await scraper.runScraper()
     }
 }
